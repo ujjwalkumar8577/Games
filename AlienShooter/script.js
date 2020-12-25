@@ -349,6 +349,18 @@ function update() {
             endGame();
         }
     }
+
+    // checking for alien and ship collision
+    for(var i=0;i<ships.length;i++) {
+        var ship = ships[i];
+        var x1x2 = (ship.x-alien.x)*(ship.x-alien.x);	
+        var y1y2 = (ship.y-alien.y)*(ship.y-alien.y);	
+        var distance = Math.sqrt( x1x2 + y1y2 );
+        if(distance<60) {
+            console.log("Hit by ship "+i);
+            endGame();
+        }
+    }
 }
 
 function applyDifficulty(d) {
@@ -408,8 +420,12 @@ function startGame() {
     musicCheckbox.checked = true;
     gameOver.style.visibility = "hidden";
     restart.style.visibility = "hidden";
+    restart.classList.remove('animateRestart');
     updateScore(); 
     isPlayingMusic = false;
+
+    alien.x = 300;
+    alien.y = HEIGHT-100;
 
     for(var i=0;i<bullets.length;i++) {
         bullets[i].restart();
@@ -428,6 +444,7 @@ function endGame() {
     gameOverSound.play();
     gameOver.style.visibility = "visible";
     restart.style.visibility = "visible";
+    restart.classList.add('animateRestart');
     
     for(var i=0;i<bullets.length;i++) {
         bullets[i].stop();
