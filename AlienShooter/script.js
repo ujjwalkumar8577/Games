@@ -3,17 +3,19 @@ var ctx = canvas.getContext("2d");
 var WIDTH = 520;
 var HEIGHT = 520;
 var lastFireAt = new Date().getTime();
-var gameOverSound = new Audio('Fire.mp3');
+var gameOverSound = new Audio('GameOver.mp3');
 var audio = new Audio('https://nhacchuong68.com/wp-content/uploads/2019/07/Alan-Walker-Faded-Instrumental-Version.mp3');
-
 var counter = 0;
 var score = 0;
 var isPlayingMusic = false;
 var isGameRunning = true;
-
 var fires = [];
 var ships = [];
 var bullets = [];
+var difficulty = 5;
+var interval;
+
+difficultyRange.value = difficulty;
 
 var alienImages = [];
 var alienImageUrls = [  "https://i.imgur.com/tvJOu59.png",
@@ -40,57 +42,61 @@ bulletImage1.src = ["https://i.imgur.com/dM81aDs.gif"];
 var bulletImage2 = new Image();
 bulletImage2.src = ["https://i.imgur.com/NyaUjNn.gif"];
 
+// // Game over image
+// var gameOverImage = new Image();
+// gameOverImage.src = ["https://pngimg.com/uploads/game_over/game_over_PNG42.png"];
+
 // alien = me
 // fire = my bullet
 // ship = enemy
 // bullet = enemy bullet
 
-for(var i = 0;i< shipUrls.length ;i++){
+for(var i = 0;i< shipUrls.length ;i++) {
     var shipImage = new Image();
     shipImage.src = shipUrls[i];
     shipImages.push(shipImage);
 }
 
-for(var i=0;i<5;i++){
-    var ship = {};
-    ship.images = shipImages;
-    ship.x = (Math.random()*1000000)%WIDTH;
-    ship.y = 0;
-    ship.width = 80;
-    ship.height = 80;
-    ship.speedX = 1 + Math.random()*3;
-    ship.speedY = 0.7;
+// create 10 ships
+// for(var i=0;i<difficulty;i++) {
+//     var ship = {};
+//     ship.images = shipImages;
+//     ship.x = (Math.random()*1000000)%WIDTH;
+//     ship.y = 0;
+//     ship.width = 80;
+//     ship.height = 80;
+//     ship.speedX = 1 + Math.random()*3;
+//     ship.speedY = 0.7;
+//     ship.move = function() {
+//         if( this.x >= WIDTH && this.speedX >0 ) {
+//             // now move in left
+//             this.speedX = - this.speedX;
+//         }
+//         if( this.x <=0 && this.speedX < 0 ) {
+//             // now move in right
+//             this.speedX = - this.speedX;
+//         }
+//         this.x += this.speedX;
+//         this.y += this.speedY;
+//         // Reappear
+//         if(this.y>=600) {
+//             this.y = -50;
+//         } 
+//     }
+//     ship.stop = function() {
+//         this.speedX = 0;
+//         this.speedY = 0;
+//         this.x = 10000;
+//         this.y = 10000;
+//     }
+//     ship.fireBullet = function() {
+//         if(Math.random()<0.01)
+//         addBullet(this.x,this.y);
+//     }
+//     ships.push(ship);
+// }
 
-    ship.move = function() {
-        if( this.x >= WIDTH && this.speedX >0 ) {
-            // now move in left
-            this.speedX = - this.speedX;
-        }
-        if( this.x <=0 && this.speedX < 0 ) {
-            // now move in right
-            this.speedX = - this.speedX;
-        }
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        // Reappear
-        if(this.y>=600) {
-            this.y = -50;
-        } 
-    }
-
-    ship.stop = function() {
-        ship.speedX=0;
-        ship.speedY=0;
-    }
-
-    ship.fireBullet = function() {
-        if(Math.random()<0.01)
-        addBullet(this.x,this.y);
-    }
-
-    ships.push(ship);
-}
+applyDifficulty(difficulty);
     
 for( var i=0; i<alienImageUrls.length ; i++ ) {
     var image = new Image();
@@ -98,13 +104,24 @@ for( var i=0; i<alienImageUrls.length ; i++ ) {
     alienImages.push(image);
 }
 
+// create 1 alien
 var alien = {};
-alien.images = alienImages ;
+alien.images = alienImages;
 alien.width = 100;
 alien.height = 100;
 alien.x = 300;
 alien.y = HEIGHT-100;
 alien.speed = 10;
+
+// // create GameOver
+// var gameOverText = {};
+// gameOverText.image = gameOverImages;
+// gameOverText.width = 870;
+// gameOverText.height = 630;
+// gameOverText.x = 300;
+// gameOverText.y = 300;
+// gameOverText.speed = 10;
+
 
 var keyMap = {};
 keyMap[38]	= { name :"up",		active:false , onactive: function() { alien.y-=alien.speed; } };
@@ -113,8 +130,10 @@ keyMap[37]	= { name :"left",	active:false , onactive: function() { alien.x-=alie
 keyMap[39]	= { name :"right",	active:false , onactive: function() { alien.x+=alien.speed; } };
 keyMap[32]	= { name :"space", 	active:false , onactive: function() {
                                                                         if(new Date().getTime() - lastFireAt>300) { 
-                                                                            lastFireAt= new Date().getTime() ; 
-                                                                            addFire(alien.x,alien.y-30); 
+                                                                            lastFireAt= new Date().getTime(); 
+                                                                            addFire(alien.x,alien.y-30);
+                                                                            addFire(alien.x-30,alien.y-30);
+                                                                            addFire(alien.x+30,alien.y-30);
                                                                         }
                                                                     }
 };
@@ -126,6 +145,16 @@ musicCheckbox.onclick = function() {
     else {
         audio.pause();
     }
+}
+
+difficultyRange.onchange = function() {
+    difficulty = difficultyRange.value;
+    console.log(difficulty);
+    applyDifficulty(difficulty);
+}
+
+restart.onclick = function() {
+    startGame();
 }
 
 document.addEventListener("keydown", function(event) {
@@ -213,13 +242,27 @@ function addBullet(x,y) {
     bullet.height = 50;
     bullet.speedX = 0;
     bullet.speedY = 7;
-    bullet.active = true;		
+    bullet.active = true;
+
     bullet.move = function() {
         this.y += this.speedY;
         if( this.y >=HEIGHT ) {
             this.active = false;
         }
     }
+
+    bullet.stop = function() {
+        this.speedY = 0;
+        this.active = false;
+    }
+
+    bullet.restart = function() {
+        this.speedY = 7;
+        this.active = true;
+        this.x = 0;
+        this.y = 0;
+    }
+
     bullets.push(bullet);
 }
 
@@ -236,7 +279,7 @@ function drawAndMoveBullets() {
     bullets = temp;
 }
 
-function updateScore(score) {
+function updateScore() {
     document.getElementById("scoreElement").innerHTML = "Score : " + score;
 }
 
@@ -283,11 +326,11 @@ function update() {
             if(distance<ship.width-20) {
                 ship.x = (Math.random()*10000000)%WIDTH;
                 ship.speedX = 3+Math.random()*4;
-                ship.y = 0;
+                ship.y = -50;
                 fire.active = false;
                 console.log("Ship Hit");
-                score += 100;       // 
-                updateScore(score); // 
+                score += 100;
+                updateScore();
             }
         }
     }
@@ -306,12 +349,75 @@ function update() {
     }
 }
 
+function applyDifficulty(d) {
+    ships = [];
+    for(var i=0;i<difficulty;i++) {
+        var ship = {};
+        ship.images = shipImages;
+        ship.x = (Math.random()*1000000)%WIDTH;
+        ship.y = 0;
+        ship.width = 80;
+        ship.height = 80;
+        ship.speedX = 1 + Math.random()*3;
+        ship.speedY = 0.7;
+        ship.move = function() {
+            if( this.x >= WIDTH && this.speedX >0 ) {
+                // now move in left
+                this.speedX = - this.speedX;
+            }
+            if( this.x <=0 && this.speedX < 0 ) {
+                // now move in right
+                this.speedX = - this.speedX;
+            }
+            this.x += this.speedX;
+            this.y += this.speedY;
+    
+            // Reappear
+            if(this.y>=600) {
+                this.y = -50;
+            } 
+        }    
+        ship.stop = function() {
+            this.speedX = 0;
+            this.speedY = 0;
+            this.x = 10000;
+            this.y = 10000;
+        }
+        ship.restart = function() {
+            this.speedX = 1 + Math.random()*3;
+            this.speedY = 0.7;
+            this.x = (Math.random()*1000000)%WIDTH;
+            this.y = 0;
+        }
+        ship.fireBullet = function() {
+            if(Math.random()<0.01)
+            addBullet(this.x,this.y);
+        }
+    
+        ships.push(ship);
+    }
+}
+
 function startGame() {
+    isGameRunning = true;
+    audio.play();
     counter = 0;
-    score = 0;    
-    gameOver.style.visibility = "hidden";    
+    score = 0;
+    musicCheckbox.checked = true;
+    gameOver.style.visibility = "hidden";
+    restart.style.visibility = "hidden";
+    updateScore(); 
     isPlayingMusic = false;
-    setInterval(update,50);
+
+    for(var i=0;i<bullets.length;i++) {
+        bullets[i].restart();
+    }
+
+    for(var j=0; j<ships.length; j++) {
+        ships[j].restart();
+    }
+
+    interval = setInterval(update,50);
 }
 
 function endGame() {
@@ -319,13 +425,25 @@ function endGame() {
     audio.pause();
     gameOverSound.play();
     gameOver.style.visibility = "visible";
+    restart.style.visibility = "visible";
+    
+    for(var i=0;i<bullets.length;i++) {
+        bullets[i].stop();
+    }
 
     for(var j=0; j<ships.length; j++) {
-        var ship = ships[j];
-        ship.stop();
-        console.log("stopped ship "+ j);
+        ships[j].stop();
     }
-    ship[4].stop();
+
+    clearInterval(interval);
+    
+    var imageObj = new Image();
+    imageObj.onload = function(){
+        var destX = canvas.width / 2 - this.width / 4;
+        var destY = canvas.height / 2 - this.height / 4;
+        ctx.drawImage(this, destX, destY, this.width/2, this.height/2);
+    };
+    imageObj.src = "https://pngimg.com/uploads/game_over/game_over_PNG42.png";
 }
 
 startGame();

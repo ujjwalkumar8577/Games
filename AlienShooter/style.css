@@ -41,6 +41,18 @@ canvas {
     text-align: center;
 }
 
+#restart {
+    visibility: hidden;
+    background-color: white;
+    padding: 20px;
+    color: green;
+    cursor: pointer;
+}
+
+#restart:hover {
+    color: red;
+}
+
 .visible {
     visibility: visible;
 }
