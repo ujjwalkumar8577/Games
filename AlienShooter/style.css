@@ -1,5 +1,27 @@
+@font-face {
+    font-family: FirstJob;
+    src: url(FirstJob-X8rP.ttf);
+  }
+
 * {
     border-radius: 10px;
+    font-family: FirstJob;
+}
+
+body {
+    background-color: aqua;
+    background-image: url(background.png);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+hr {
+    border-top: 2px solid red;
+}
+
+h3 {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 .block {
@@ -27,6 +49,7 @@ canvas {
     color: white;
     padding: 20px;
     text-align: center;
+    border: 1px solid red;
 }
 
 .right {
@@ -39,18 +62,20 @@ canvas {
     color: white;
     padding: 20px;
     text-align: center;
+    border: 1px solid red;
 }
 
 #restart {
     visibility: hidden;
     background-color: white;
-    padding: 20px;
-    color: green;
+    margin: 20px;
+    padding: 10px;
+    color:red;
     cursor: pointer;
 }
 
 #restart:hover {
-    color: red;
+    color:green;
 }
 
 .visible {

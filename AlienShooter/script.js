@@ -6,6 +6,7 @@ var lastFireAt = new Date().getTime();
 var gameOverSound = new Audio('GameOver.mp3');
 var audio = new Audio('https://nhacchuong68.com/wp-content/uploads/2019/07/Alan-Walker-Faded-Instrumental-Version.mp3');
 var counter = 0;
+var highscore = 0;
 var score = 0;
 var isPlayingMusic = false;
 var isGameRunning = true;
@@ -13,9 +14,8 @@ var fires = [];
 var ships = [];
 var bullets = [];
 var difficulty = 5;
-var interval;
-
 difficultyRange.value = difficulty;
+var interval;
 
 var alienImages = [];
 var alienImageUrls = [  "https://i.imgur.com/tvJOu59.png",
@@ -42,10 +42,6 @@ bulletImage1.src = ["https://i.imgur.com/dM81aDs.gif"];
 var bulletImage2 = new Image();
 bulletImage2.src = ["https://i.imgur.com/NyaUjNn.gif"];
 
-// // Game over image
-// var gameOverImage = new Image();
-// gameOverImage.src = ["https://pngimg.com/uploads/game_over/game_over_PNG42.png"];
-
 // alien = me
 // fire = my bullet
 // ship = enemy
@@ -57,7 +53,7 @@ for(var i = 0;i< shipUrls.length ;i++) {
     shipImages.push(shipImage);
 }
 
-// create 10 ships
+// create 10 ship objects
 // for(var i=0;i<difficulty;i++) {
 //     var ship = {};
 //     ship.images = shipImages;
@@ -113,30 +109,32 @@ alien.x = 300;
 alien.y = HEIGHT-100;
 alien.speed = 10;
 
-// // create GameOver
-// var gameOverText = {};
-// gameOverText.image = gameOverImages;
-// gameOverText.width = 870;
-// gameOverText.height = 630;
-// gameOverText.x = 300;
-// gameOverText.y = 300;
-// gameOverText.speed = 10;
-
-
+// handle key actions
 var keyMap = {};
-keyMap[38]	= { name :"up",		active:false , onactive: function() { alien.y-=alien.speed; } };
-keyMap[40]	= { name :"down",	active:false , onactive: function() { alien.y+=alien.speed; } };
-keyMap[37]	= { name :"left",	active:false , onactive: function() { alien.x-=alien.speed; } };
-keyMap[39]	= { name :"right",	active:false , onactive: function() { alien.x+=alien.speed; } };
+keyMap[38]	= { name :"up",		active:false , onactive: function() { 
+    if(alien.y>40)
+        alien.y-=alien.speed;
+} };
+keyMap[40]	= { name :"down",	active:false , onactive: function() {
+    if(alien.y<HEIGHT-40)
+        alien.y+=alien.speed;
+} };
+keyMap[37]	= { name :"left",	active:false , onactive: function() {
+    if(alien.x>60)
+        alien.x-=alien.speed;
+} };
+keyMap[39]	= { name :"right",	active:false , onactive: function() {
+    if(alien.x<WIDTH-60)
+        alien.x+=alien.speed;
+} };
 keyMap[32]	= { name :"space", 	active:false , onactive: function() {
-                                                                        if(new Date().getTime() - lastFireAt>300) { 
-                                                                            lastFireAt= new Date().getTime(); 
-                                                                            addFire(alien.x,alien.y-30);
-                                                                            addFire(alien.x-30,alien.y-30);
-                                                                            addFire(alien.x+30,alien.y-30);
-                                                                        }
-                                                                    }
-};
+    if(new Date().getTime() - lastFireAt>300) { 
+        lastFireAt= new Date().getTime(); 
+        addFire(alien.x,alien.y-30);
+        // addFire(alien.x-30,alien.y-30);
+        // addFire(alien.x+30,alien.y-30);
+    }
+} };
 
 musicCheckbox.onclick = function() {
     if (musicCheckbox.checked == true){
@@ -280,6 +278,10 @@ function drawAndMoveBullets() {
 }
 
 function updateScore() {
+    if(score>highscore)
+        highscore = score;
+    
+    document.getElementById("highScoreElement").innerHTML = "High Score : " + highscore;
     document.getElementById("scoreElement").innerHTML = "Score : " + score;
 }
 
@@ -326,7 +328,7 @@ function update() {
             if(distance<ship.width-20) {
                 ship.x = (Math.random()*10000000)%WIDTH;
                 ship.speedX = 3+Math.random()*4;
-                ship.y = -50;
+                ship.y = -20;
                 fire.active = false;
                 console.log("Ship Hit");
                 score += 100;
