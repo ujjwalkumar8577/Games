@@ -110,7 +110,7 @@ function moveNext() {
                 document.getElementById("b"+ran).style.backgroundImage = "url(./img/cross.png)";
                 isGameRunning = true;
                 check();
-            }, 1000);
+            }, 500);
         }
         else {
             if(isGameRunning)

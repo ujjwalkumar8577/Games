@@ -3,66 +3,53 @@ var r = 10;
 var isMusicPlaying = false;
 horn = new Audio('CarHorn.mp3');
 music = new Audio('CarMusic.mp3');
-w = window.innerWidth-150;
-h = window.innerHeight-50;
+w = document.getElementsByClassName('Container').innerWidth;
+h = document.getElementsByClassName('Container').innerHeight;
 
-
-// document.addEventListener("keydown", function(event) {
-//     handleKey(event, true);
-// });
-
-// document.addEventListener("keyup", function(event) {
-//     handleKey(event, false);
-// });
-
-// // to handle key events
-// function handleKey(event, status) {
-//     var currentController = keyMap[event.keyCode];
-//     if(!!currentController) {
-//         currentController.active = status;
-//     }
-// }
-
+// Music Self Loop
 music.addEventListener('ended', function () {
     this.currentTime = 0;
     this.play();
 }, false);
 
-document.onkeydown = function(e) {
-    key=e.keyCode;
-    // console.log(key + 'Button Pressed');
-    // console.log('x = '+x);
-    // console.log('y = '+y);
-    // console.log('a = '+angle);
+// handle key actions
+var keyMap = {};
+keyMap[38]	= { name :"up",		active:false , onactive: moveUP };
+keyMap[87]	= { name :"up",		active:false , onactive: moveUP };
+keyMap[40]	= { name :"down",	active:false , onactive: moveDOWN };
+keyMap[83]	= { name :"down",	active:false , onactive: moveDOWN };
+keyMap[37]	= { name :"left",	active:false , onactive: moveLEFT };
+keyMap[65]	= { name :"left",	active:false , onactive: moveLEFT };
+keyMap[39]	= { name :"right",	active:false , onactive: moveRIGHT };
+keyMap[68]	= { name :"right",	active:false , onactive: moveRIGHT };
+keyMap[77]	= { name :"music", 	active:false , onactive: playPauseMusic };
+keyMap[72]	= { name :"horn", 	active:false , onactive: function() {
+    horn.play();
+} };
 
-    // 37LEFT 38UP 39RIGHT 40BOTTOM
+document.addEventListener("keydown", function(event) {
+    handleKey(event, true);
+});
 
-    if(key == 72) {
-        horn.play();
-    }
+document.addEventListener("keyup", function(event) {
+    handleKey(event, false);
+});
 
-    if(key == 77) {
-        playPauseMusic();
-    }
-
-    if (key == 37 || key==65) {
-        moveUP();
-        moveLEFT();
-    }
-
-    if (key == 38 || key==87) {
-        moveUP();        
-    }
-
-    if (key == 39 || key==68) {
-        moveUP();
-        moveRIGHT();
-    }
-
-    if (key == 40 || key==83) {
-        moveDOWN();
+function handleKey(event, status) {
+    var currentController = keyMap[event.keyCode];
+    if(!!currentController) {
+        currentController.active = status;
     }
 }
+
+setInterval(function() {
+    for(var key in keyMap) {
+        var currentController = keyMap[key];
+        if( currentController.active) {
+            currentController.onactive();
+        }
+    }
+},50);
 
 function moveUP() {
     angle = getCurrentRotation(car);
@@ -71,7 +58,6 @@ function moveUP() {
 
     x+= r*cos(angle);
     y+= r*sin(angle);
-    console.log(r*cos(angle),r*sin(angle));
     car.style.left = Math.round(x)+"px";
     car.style.bottom = Math.round(y)+"px";
 }
@@ -83,7 +69,6 @@ function moveDOWN() {
 
     x-= r*cos(angle);
     y-= r*sin(angle);
-    console.log(r*cos(angle),r*sin(angle));
     car.style.left = Math.round(x)+"px";
     car.style.bottom = Math.round(y)+"px";
 }
@@ -144,14 +129,12 @@ function getCurrentRotation(el){
              st.getPropertyValue("transform") ||
              "none";
     if (tm != "none") {
-      var values = tm.split('(')[1].split(')')[0].split(',');
-      /*
-      a = values[0];
-      b = values[1];
-      angle = Math.round(Math.atan2(b,a) * (180/Math.PI));
-      */
-      //return Math.round(Math.atan2(values[1],values[0]) * (180/Math.PI));
-      //this would return negative values the OP doesn't wants so it got commented and the next lines of code added
+      var values = tm.split('(')[1].split(')')[0].split(',');      
+    //   a = values[0];
+    //   b = values[1];
+    //   angle = Math.round(Math.atan2(b,a) * (180/Math.PI));
+    //   return Math.round(Math.atan2(values[1],values[0]) * (180/Math.PI));
+    //   this would return negative values the OP doesn't wants so it got commented and the next lines of code added
       var angle = Math.round(Math.atan2(values[1],values[0]) * (180/Math.PI));
       return (angle < 0 ? angle + 360 : angle); //adding 360 degrees here when angle < 0 is equivalent to adding (2 * Math.PI) radians before
     }

@@ -53,45 +53,7 @@ for(var i = 0;i< shipUrls.length ;i++) {
     shipImages.push(shipImage);
 }
 
-// create 10 ship objects
-// for(var i=0;i<difficulty;i++) {
-//     var ship = {};
-//     ship.images = shipImages;
-//     ship.x = (Math.random()*1000000)%WIDTH;
-//     ship.y = 0;
-//     ship.width = 80;
-//     ship.height = 80;
-//     ship.speedX = 1 + Math.random()*3;
-//     ship.speedY = 0.7;
-//     ship.move = function() {
-//         if( this.x >= WIDTH && this.speedX >0 ) {
-//             // now move in left
-//             this.speedX = - this.speedX;
-//         }
-//         if( this.x <=0 && this.speedX < 0 ) {
-//             // now move in right
-//             this.speedX = - this.speedX;
-//         }
-//         this.x += this.speedX;
-//         this.y += this.speedY;
-//         // Reappear
-//         if(this.y>=600) {
-//             this.y = -50;
-//         } 
-//     }
-//     ship.stop = function() {
-//         this.speedX = 0;
-//         this.speedY = 0;
-//         this.x = 10000;
-//         this.y = 10000;
-//     }
-//     ship.fireBullet = function() {
-//         if(Math.random()<0.01)
-//         addBullet(this.x,this.y);
-//     }
-//     ships.push(ship);
-// }
-
+// create ships according to difficulty
 applyDifficulty(difficulty);
     
 for( var i=0; i<alienImageUrls.length ; i++ ) {
@@ -108,33 +70,6 @@ alien.height = 100;
 alien.x = 300;
 alien.y = HEIGHT-100;
 alien.speed = 10;
-
-// handle key actions
-var keyMap = {};
-keyMap[38]	= { name :"up",		active:false , onactive: function() { 
-    if(alien.y>40)
-        alien.y-=alien.speed;
-} };
-keyMap[40]	= { name :"down",	active:false , onactive: function() {
-    if(alien.y<HEIGHT-40)
-        alien.y+=alien.speed;
-} };
-keyMap[37]	= { name :"left",	active:false , onactive: function() {
-    if(alien.x>60)
-        alien.x-=alien.speed;
-} };
-keyMap[39]	= { name :"right",	active:false , onactive: function() {
-    if(alien.x<WIDTH-60)
-        alien.x+=alien.speed;
-} };
-keyMap[32]	= { name :"space", 	active:false , onactive: function() {
-    if(new Date().getTime() - lastFireAt>300) { 
-        lastFireAt= new Date().getTime(); 
-        addFire(alien.x,alien.y-30);
-        // addFire(alien.x-30,alien.y-30);
-        // addFire(alien.x+30,alien.y-30);
-    }
-} };
 
 musicCheckbox.onclick = function() {
     if (musicCheckbox.checked == true){
@@ -155,6 +90,18 @@ restart.onclick = function() {
     startGame();
 }
 
+// handle key actions
+var keyMap = {};
+keyMap[38]	= { name :"up",		active:false , onactive: moveUP };
+keyMap[87]	= { name :"up",		active:false , onactive: moveUP };
+keyMap[40]	= { name :"down",	active:false , onactive: moveDOWN };
+keyMap[83]	= { name :"down",	active:false , onactive: moveDOWN };
+keyMap[37]	= { name :"left",	active:false , onactive: moveLEFT };
+keyMap[65]	= { name :"left",	active:false , onactive: moveLEFT };
+keyMap[39]	= { name :"right",	active:false , onactive: moveRIGHT };
+keyMap[68]	= { name :"right",	active:false , onactive: moveRIGHT };
+keyMap[32]	= { name :"space", 	active:false , onactive: FIRE };
+
 document.addEventListener("keydown", function(event) {
     if(isGameRunning)
     {
@@ -169,12 +116,36 @@ document.addEventListener("keyup", function(event) {
     handleKey(event, false);
 });
 
-
-// to handle key events
 function handleKey(event, status) {
     var currentController = keyMap[event.keyCode];
     if(!!currentController) {
         currentController.active = status;
+    }
+}
+
+// key functions
+function moveUP() {
+    if(alien.y>40)
+        alien.y-=alien.speed;
+}
+function moveDOWN() {
+    if(alien.y<HEIGHT-40)
+        alien.y+=alien.speed;
+}
+function moveLEFT() {
+    if(alien.x>60)
+        alien.x-=alien.speed;
+}
+function moveRIGHT() {
+    if(alien.x<WIDTH-60)
+        alien.x+=alien.speed;
+}
+function FIRE() {
+    if(new Date().getTime() - lastFireAt>300) { 
+        lastFireAt= new Date().getTime(); 
+        addFire(alien.x,alien.y-30);
+        // addFire(alien.x-30,alien.y-30);
+        // addFire(alien.x+30,alien.y-30);
     }
 }
 
